@@ -40,7 +40,9 @@ vector<double> vec3(vec1.cbegin(),vec1.cend()); //错误
 array<int,10> ia1={1,2,3,4,5,6,7,8,9,10};
 array<int,10> ia2(ia2);
 ```
-## 容器
+## 容器关系运算
+1.所有容器类型都支持==、!=操作
+
 ## 赋值与swap
 ## 大小和修改容量
 ## 添加元素
