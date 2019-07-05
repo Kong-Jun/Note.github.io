@@ -1,4 +1,6 @@
 ## 容器类型别名
+* forward_list之外的顺序容器都支持reverse_iterator
+
 |类型别名|介绍|
 |-|-|
 |iterator|容器类型的迭代器类型|
