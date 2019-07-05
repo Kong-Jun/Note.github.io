@@ -2,5 +2,7 @@
 |类型别名|介绍|
 |-|-|
 |iterator|容器类型的迭代器类型|
-|const_iterator|容器类型的
+|const_iterator|容器类型的常量迭代器类型|
+|size_type|能容纳此容器类型的最大|
+
 
