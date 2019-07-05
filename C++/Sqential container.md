@@ -12,6 +12,8 @@
 |size_type|能容纳此容器类型的最大可能容量的无符号整数类型|
 |reference|容器的元素的引用类型|
 |const_reference|容器的常量引用类型|
-* iterator系列，通过begin(),end()系列
+* iterator系列，通过begin(),end()系列成员函数获得.。
+## 容器初始化
+## 赋值与swap
 
 
