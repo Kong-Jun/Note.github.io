@@ -36,7 +36,7 @@ vector<int> vec1={1,2,3,4,5};
 vector<double> vec2(vec1);   //正确
 vector<double> vec3(vec1.cbegin(),vec1.cend()); //错误
 ```
-3.array可以看做内置数组的改良版,各种行为与内置数组类似.比如:不能修改大小,创建时需要**指定大小**.
+3.array可以看做内置数组的改良版,各种行为与内置数组类似.比如:不能修改大小,创建时需要==指定大小==.
 ```
 array<int,10> ia1; //
 array<int,10> ia1={1,2,3,4,5,6,7,8,9,10};
