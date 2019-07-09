@@ -394,11 +394,52 @@ replace_copy(beg,end,dest,old_value,new_value);
 * 当使用auto定义一个用lambda初始化的变量时,定义了一个从lambda生成的类型的对象.
 * 从lambda生成的类包含的数据成员是捕获列表中的成员.当lambda对象被创建时,lambda的数据成员被初始化.
 #### 捕获列表
-* lambda补货方式分为**值捕获**和**引用捕获**
-##### 值捕获
-##### 引用捕获
-#####隐式捕获
+* lambda捕获方式分为**值捕获**和**引用捕获**
+* lambda可以直接使用所在函数之前的变量和lambda之前的static变量.变量捕获只是指捕获lambda之前的非static变量.
 
+|捕获列表|说明|
+|-|-|
+|[]|空捕获列表.lambda不捕获变量.|
+|[names]|lambda捕获列表中的变量.名字前加&的引用捕获,否则值捕获.|
+|[&]|默认引用捕获.|
+|[=]|默认值捕获|
+|[&,identifier_list]|identifier_list中的变量必须用**值捕获**方式,其他变量**默认引用捕获**.|
+|[=,identifier_list]|identifier_list中的变量不许用**引用捕获**方式,其他变量**默认值捕获**|
+##### 值捕获
+* 值捕获的前提是捕获的变量**可以拷贝**.
+```'
+void func(){
+    size_t v1=42;
+    auto f=[v1] {return v1;}; //捕获v1;
+    v1=0;   //令v1为0
+    auto j=f(); //j等于42.f保存了创建它时v1的拷贝.修改v1对lambda对象f没影响.
+}
+```
+##### 引用捕获
+* 捕获引用、指针、迭代器时，必须保证在lambda**执行时变量存在**.
+* 当lambda返回引用时,必须保证引用的对象存在,并且**不能返回指向局部变量的引用**.
+```
+void func(){
+    size_t v1=42;
+    auto f=[&v1] {return v1;}; //捕获v1;
+    v1=0;   //令v1为0
+    auto j=f(); //j为0.f保存v1的引用.
+}
+```
+#####隐式捕获
+* 不仅可以显式地指定值捕获和引用捕获，也可以隐式地指定捕获类型.此时默认以隐式捕获确定的方式捕获lambda之前的所有变量.
+```
+//words是string类型.
+wc=find_if(words.begin(),words.end(),
+            [=]A(const strint &s)  //sz隐式捕获,值捕获类型.
+                { return s.size()>=sz;});
+```
+
+```
+//words是string类型;os显示捕获,引用捕获类型;c隐式捕获,值捕获类型.
+for_each(words.begin(),words.end(),
+        [=,&os] (const string &s) { os<<s<<c;});
+```
 #### 形参列表
 * lambda形参列表和一般函数的形参列表相同,但**不允许使用默认实参**.
 #### 返回类型
