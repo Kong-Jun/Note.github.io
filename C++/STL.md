@@ -440,12 +440,88 @@ wc=find_if(words.begin(),words.end(),
 for_each(words.begin(),words.end(),
         [=,&os] (const string &s) { os<<s<<c;});
 ```
+#####可变lambda
+* 对于值捕获的变量,lambda不能改变其值.此时可以在lambda形参列表后面加上mutable来改变值捕获变量的值.
+```
+void func(){
+    size_t v1=10;
+    auto f=[=] {return ++v1;}; //错误.lambda不改变值捕获的变量的值.
+    auto f=[=] () mutable {return ++v1;}; //正确.可变lambda.可以改变值捕获的变量的值.
+}
+```
 #### 形参列表
 * lambda形参列表和一般函数的形参列表相同,但**不允许使用默认实参**.
 #### 返回类型
 * 当lambda表达式的function_body中有**除return以外的语句**,并且**未指定return_type**时,lambda自动返回**void**.
+```
+//利用transform算法将vector<int>容器中的值转换为绝对值;
+vector<int> vec={-1,2,-3,4,-5,6,-7,8,-9};
+//正确,lambda函数体中只有return语句,编译器自动推断出返回类型为int.
+transform(vec.begin(),vec.end(),
+           [](int i) {return i<0?-i:i});
+//错误.lambda函数体中有除return之外的语句,自动推断出返回void,与实际情况不同.
+transform(vec.begin(),bec.end(),
+            [](int i) {if(i<0) return -1; else return i;})
+```
 #### 函数体
+* lambda函数体与一般函数的函数体相同.
 ###函数配适器:bind函数
+* lambda只适用于一两个地方使用的简单操作.当某个操作需要反复使用或者较为复杂时,使用bind函数解决.
+* bind函数和bind函数所需的cref、ref函数都定义在**functional**头文件中.
+####一般形式:
+**auto newCallable=bind(callable,args_list);**
+>>注释:
+>>1.newCallable是一个可调用对象.
+>>2.args_lsit是一个逗号分隔的参数列表,**对应着callable的形参列表**.
+>>3.args_list中可能有形如_n的占位符.这些占位符表示newCallable中相应位置的参数._1表示newCallable的第一个参数,_2表示newCallable的第二个参数,以此类推.
+>>4.当调用newCallable时,newCallable调用callable,并将占位符表示的参数传递给callable.
+
+```
+//check_sz定义:
+//bool check_sz(const stirng &s,string::size_type sz){
+//    return s.size()>s=sz;
+//}
+string s="Hello";
+auto check6=bind(check_sz,_1,6); //定义newCallable,newCallable的第一个参数传递给callable;
+//相当于:
+//auto b1=check(s,6);
+bool b1=check6(s);
+```
+####占位符
+* 占位符_n都定义在命名空间**std::placeholders**中.使用占位符必须提供命名空间声明.
+```
+//使用_1,_2;
+using namespace std::namespaceholders::_1;
+using namespace std::namespaceholders::_2;
+//可以以直接声明命名空间std::namespaceholders;
+using namesapce std::namespacehodlers;
+```
+####bind参数
+* bind函数配适器不仅可以避开算法对谓词参数个数的限制,还可以改变可调用对象中的参数的次序
+```
+//f(a,b,c,d,e,f)是一个有5个参数的函数;
+auto g=bind(f,a,b,_2,d,e,_1_);
+//bind调用g(X,Y)会被映射为:
+//f(a,,b,Y,d,e,X);
+```
+* 利用bind重排参数次序
+```
+//words是string类型;isShorter函数当一个参数长度小于第二个时返回真,否则返回假;
+//单词长度从小到大;
+sort(words.begin(),words.end(),isShorter);
+//单词长度从大到小;
+sort(words.begin(),words.end(),bind(isShorter,_2,_1));
+```
+* **绑定引用参数**
+
+bind那些不是占位符的参数被**拷贝**到bind返回的newCallable中,但是某些参数无法拷贝,此时使用标准库函数**ref/cref**.ref返回一个对象,包含给定的引用,此对象可以拷贝.cref返回保存const引用的对象.
+```
+//ostream &print(ostream &os,const string &s,char c){
+//    return os<<s<<c;
+//}
+for_each(words.cbegin(),words.cend(),bind(print,ref(os),_1,_2); //由于os是ostream类型对象,不可拷贝,因此使用标准库函数ref;
+```
+
 
 
 
