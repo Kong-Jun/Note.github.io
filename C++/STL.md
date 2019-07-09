@@ -85,8 +85,11 @@ vec[0]=1; //错误.vec是空向量,没有下标为0的元素.
 ## 添加元素
 
 1.添加元素用insert或emplace
+
 2.forward_list不支持back相关的操作.string、vector不支持front相关的操作
+
 3.forward_list有特殊的insert和emplace操作
+
 4.array不能改变容量，因此不能添加元素
 
 |插入操作|说明|
@@ -126,9 +129,13 @@ vec.insert(vec.begin(),"Yes");
 ```
 
 ## 删除元素
+
 1.删除部分元素用erase(),清空容器clear();
+
 2.array不能改变容量，因此不支持删除操作;
+
 3.forward_list不支持back相关的操作.string、vector不支持front相关的操作;
+
 4.forward_list有特殊的erase操作;
 
 |删除操作|说明|
@@ -163,9 +170,13 @@ for(int i=0;i<10;i++)
 ## 大小和修改容量
 
 1.size(),empty()所有容器都支持.
+
 2.**forward_list**不支持maxsize().
+
 3.shrink_to_fit只适用于能**随机访问的顺序容器**.如:vector,string,deque.
+
 4.capacity()和reserve()仅适用于**vector,string**.
+
 5.vector,string当且仅当容器元素个数大于容量时才会增加容量.
 
 |操作|说明|
@@ -369,6 +380,7 @@ sort(vec.rbegin(),vec.rend());
 * 泛型算法**依赖于元素类型**的操作,元素类型必须要定义有算法需要的运算符.泛型算法允许使用自定义的操作替代默认的运算符.
 ## 算法形参模式
 为了便于记忆算法,标准库提供的算法大部分有着相同的形式.
+
 |形参|意义|
 |-|-|
 |beg,end|beg和end表示一个迭代器范围,几乎所有算法都对一个有beg和end表示的序列进行操作.|
@@ -377,6 +389,7 @@ sort(vec.rbegin(),vec.rend());
 |unaryPred,binaryPred|一元谓词和二元谓词,分别接受一个和两个**来自输入序列**的参数,并且谓词返回值可用做**条件类型**.|
 |comp|comp是一个二元谓词,满足关联容器中对关键字序的要求.
 |unaryOp,binaryOp|两个可调用对象,分别接受输入序列中一个和两个参数.|
+
 
 **大多数算法满足以下四种形式之一**
 * alg(beg,end,*other argvs*);
