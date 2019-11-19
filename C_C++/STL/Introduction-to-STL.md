@@ -1,3 +1,4 @@
+[TOC]
 # STL顺序容器
 ## 容器类型别名
 * forward_list之外的顺序容器都支持reverse_iterator
@@ -227,22 +228,39 @@ stack<int> stk1; //创建空stack<int>配适器.
 stack<int,vector<int>> stk2; //vector<int>为底层容器创建stack<int>配适器.
 ```
 
-## stack容器配适器
-stack定义在头文件*stack*中.
-* stack的底层容器
+## stack容器适配器
+
+stack定义在头文件**stack**中.
+
+### stack的底层容器
 
 stack默认deque实现.stack需要push_back,pop_back,back操作,因此可以用除了array和forward_list以外的任何顺序容器实现.
 
-*stack支持的操作
+### stack支持的操作:
+
 |操作|说明|
+|-|-|
 |pop()|出栈,返回void.|
 |top()|返回栈顶元素.|
 |push(val)|将val拷贝初始化到栈顶.|
 |emplace(args)|由args构造栈顶元素.|
 
-*
+##  队列适配器
+队列适配器包括queue和priority_queue．都定义在**queue**头文件中．
+
+###　队列适配器的底层容器
+
+1. queue在队尾入队，队首出队，因此同时需要front和back相关的操作，因此可以用list和dqueue实现．queue默认基于deque实现.
+2. priority_queue默认基于vector实现.也可基于list实现.
+
+### 队列配适器支持的操作.(待续)
+
+|操作|说明|
+|-|-|
+|q.pop()|返回queue搜
 
 # STL迭代器
+
 ## 迭代器失效
 1.当对顺序容器进行改变容器元素个数的操作时,迭代器可能失效.
 ###vector,string
@@ -274,10 +292,14 @@ while(iter!=vec.end()){
     else vec.erase(iter);
 }
 ```
+
 ## 迭代器范围
-* 一对迭代器表示的范围为左闭合右开区间.数学表示[begin,end).
+
+一对迭代器表示的范围为左闭合右开区间.数学表示[begin,end).
+
 ## 标准库定义的特殊迭代器
-* 除了每个容器的迭代器,头文件**iterator**中还定义了四种迭代器.
+
+除了每个容器的迭代器,头文件**iterator**中还定义了四种迭代器.
 
 ### 插入迭代器
 * 插入迭代器类型:
@@ -301,7 +323,7 @@ while(iter!=vec.end()){
 * 可以向任何定义了输入运算符的类型定义ostream_iterater,向**任何定义了输出运算符的类型**定义istream_iterator.
 --------
 
-* istream_iterator操作:
+**istream_iterator操作:**
 
 |istream_iterator操作|说明|
 |-|-|
@@ -312,7 +334,7 @@ while(iter!=vec.end()){
 |in1==in2|若in1和in2读取相同的值,并且绑定到同一个流或都为尾后迭代器,则两者相等.|
 |in1!=in2|判断标准如上.|
 |++in,in++|递增运算与一般递增运算相同.|
-* ostream_iterator操作:
+**ostream_iterator操作:**
 
 |ostream_iterator操作|说明|
 |-|-|
