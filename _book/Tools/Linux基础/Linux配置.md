@@ -109,53 +109,5 @@ yakuake在Fedora上只有正常宽度的一半，没有找到调节正常的方�
 
 ## Virtual Box
 
-virtualbox 默认功能比较弱，如果需要共享文件夹、访问宿主系统设备等功能需要下载功能增强包。
-
-virtualbox 的默认分辨率比较低，可以在全局设置中调节。
-
-virtualbox 如果需要访问外围设备（比如U盘），不仅需要安装功能增强包，还必须将当前用户加入到 virtualbox 的用户组中。
-
-```sh
-cat /etc/group | grep vbox # 查找virtualbox所在的用户组
-sudo usermod -a -G vboxusers kongjun 
-```
-
-
-
-## Typora 图片自动上传
-
-在使用 Typora 编辑 markdown 文档时希望能将图片自动上传并将本地链接替换为 url，通过 PicGo 加 Gitee 可以满足这个需求。
-
-使用 Gitee 作为图床，PicGo 作为管理图片上传的工具
-
-PicGo 配置文件（`~/.picgo/config.json`）如下：
-
-```json
-{
-  "picBed": {
-    "current": "gitee",
-    "uploader": "gitee",
-    "gitee": {
-      "branch": "master",
-      "repo": "kongjun18/image",
-      "token": "×××××××××××",
-      "customUrl": "",
-      "path": ""
-    }
-  },
-  "picgoPlugins": {
-    "picgo-plugin-smms-user": true,
-    "picgo-plugin-gitee-uploader": true,
-    "picgo-plugin-github-plus": true
-  },
-  "picgo-plugin-gitee-uploader": {
-    "lastSync": "2020-08-06 09:47:08"
-  }
-}
-
-```
-
-
-
 
 

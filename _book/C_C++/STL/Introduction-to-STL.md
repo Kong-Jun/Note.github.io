@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 # STL顺序容器
 ## 容器类型别名
 * forward_list之外的顺序容器都支持reverse_iterator
@@ -59,7 +63,7 @@ array<int,10> ia2(ia2);
         A=B,相当与扔掉A袋子中的信件,然后将B袋子中的信件的复印件替代A袋子中的信件.
         swap(A,B).  当A,B不是array或string时,相当将A袋子里的信件放进B袋子,B袋子原来的信件放进A袋子.
                     当A,B是array或string时,相当与将A袋子中信件的内容擦去,对应地写上B袋子中信件的内容;B袋子的信件也将内容擦去,对应地写上原来A信件中的内容.
-            
+
 ## 访问元素
 1.通过**解引用迭代器**访问元素.
 2.通过**容器定义的**访问操作访问元素
@@ -94,7 +98,7 @@ vec[0]=1; //错误.vec是空向量,没有下标为0的元素.
 
 |插入操作|说明|
 |-|-|
-|c.push_back(t)|在尾部创建一个值为t创建的元素.返回void.| 
+|c.push_back(t)|在尾部创建一个值为t创建的元素.返回void.|
 |c.emplace_back(args)|在尾部用args创建元素.返回void.|
 |c.push_front(t)|在头部创建一个值为t创建的元素.返回void.|
 |c.emplace_front(args)|在头部用args创建元素.返回void.|
@@ -227,22 +231,39 @@ stack<int> stk1; //创建空stack<int>配适器.
 stack<int,vector<int>> stk2; //vector<int>为底层容器创建stack<int>配适器.
 ```
 
-## stack容器配适器
-stack定义在头文件*stack*中.
-* stack的底层容器
+## stack容器适配器
+
+stack定义在头文件**stack**中.
+
+### stack的底层容器
 
 stack默认deque实现.stack需要push_back,pop_back,back操作,因此可以用除了array和forward_list以外的任何顺序容器实现.
 
-*stack支持的操作
+### stack支持的操作:
+
 |操作|说明|
+|-|-|
 |pop()|出栈,返回void.|
 |top()|返回栈顶元素.|
 |push(val)|将val拷贝初始化到栈顶.|
 |emplace(args)|由args构造栈顶元素.|
 
-*
+##  队列适配器
+队列适配器包括queue和priority_queue．都定义在**queue**头文件中．
+
+###　队列适配器的底层容器
+
+1. queue在队尾入队，队首出队，因此同时需要front和back相关的操作，因此可以用list和dqueue实现．queue默认基于deque实现.
+2. priority_queue默认基于vector实现.也可基于list实现.
+
+### 队列配适器支持的操作.(待续)
+
+|操作|说明|
+|-|-|
+|q.pop()|返回queue搜
 
 # STL迭代器
+
 ## 迭代器失效
 1.当对顺序容器进行改变容器元素个数的操作时,迭代器可能失效.
 ###vector,string
@@ -274,10 +295,14 @@ while(iter!=vec.end()){
     else vec.erase(iter);
 }
 ```
+
 ## 迭代器范围
-* 一对迭代器表示的范围为左闭合右开区间.数学表示[begin,end).
+
+一对迭代器表示的范围为左闭合右开区间.数学表示[begin,end).
+
 ## 标准库定义的特殊迭代器
-* 除了每个容器的迭代器,头文件**iterator**中还定义了四种迭代器.
+
+除了每个容器的迭代器,头文件**iterator**中还定义了四种迭代器.
 
 ### 插入迭代器
 * 插入迭代器类型:
@@ -301,7 +326,7 @@ while(iter!=vec.end()){
 * 可以向任何定义了输入运算符的类型定义ostream_iterater,向**任何定义了输出运算符的类型**定义istream_iterator.
 --------
 
-* istream_iterator操作:
+**istream_iterator操作:**
 
 |istream_iterator操作|说明|
 |-|-|
@@ -312,7 +337,7 @@ while(iter!=vec.end()){
 |in1==in2|若in1和in2读取相同的值,并且绑定到同一个流或都为尾后迭代器,则两者相等.|
 |in1!=in2|判断标准如上.|
 |++in,in++|递增运算与一般递增运算相同.|
-* ostream_iterator操作:
+**ostream_iterator操作:**
 
 |ostream_iterator操作|说明|
 |-|-|
@@ -393,11 +418,11 @@ sort(vec.rbegin(),vec.rend());
 |*iter||
 |iter->member||
 ### 输出迭代器
- |输出迭代器支持的操作|说明|
- |-|-|
- |iter++||
- |++iter||
- |*iter||
+|输出迭代器支持的操作|说明|
+|-|-|
+|iter++||
+|++iter||
+|*iter||
 ### 前向迭代器
 * 同时支持输入、输出迭代器的全部操作,**不可递减**.
 ### 双向迭代器
@@ -411,7 +436,7 @@ sort(vec.rbegin(),vec.rend());
 |- ,-= ,+ ,+=|赋值和复合赋值.|
 |iter2-iter1|两迭代器相减得到两迭代器之间的距离,类型为difference_type.|
 |iter[n]|相当于在迭代器**前进方向**移动n个位置,然后解引用.|
-# STL关联容器(待续)
+# 
 # STL泛型算法
 * 泛型算法定义在头文件**algorithm**和**numeric**中.
 * 泛型算法**运行在迭代器上**,不依赖于容器.算法可以改变容器内元素的值,更改元素的次序,但并不执行容器的操作,**不改变容器的大小**.
@@ -428,8 +453,8 @@ sort(vec.rbegin(),vec.rend());
 |comp|comp是一个二元谓词,满足关联容器中对关键字序的要求.
 |unaryOp,binaryOp|两个可调用对象,分别接受输入序列中一个和两个参数.|
 
-
 **大多数算法满足以下四种形式之一**
+
 * alg(beg,end,*other argvs*);
 * alg(beg,end,dest,*other argvs*);
 * alg(beg,end,beg2,*other argvs*);
@@ -459,157 +484,175 @@ replace_copy(beg,end,dest,old_value,new_value);
 * 可调用对象:如果个对象或表达式可以使用调用运算符,那么这个对象或表达式就是可调用对象.
 * 谓词:一个返回结果能用做**条件**的值,并且接受**一个或两个**参数的可调用对象.
 * 用自定义的操作替换算法默认的运算符,只需要在参数列表中传递一个谓词或者可调用对象.
-### lambada表达式
 
-有时需要向谓词传递大于两个参数,但是参数个数大于谓词能接受的最大个数,使用lambda表达式可以解决这个问题.
-#### 基本形式
 
-**[capture_lsit] (parameter_lsit) ->return_type {function_body}**
-* parameter_list和return_type可以省略
-* return_type必须使用尾置返回类型.
-* capture_lsit和function_body不可省略.
-#### 表达式创建
 
-* 当定义一个lambda时,编译器生成一个与lambda对应的新的、未命名的类类型.
-* 当向函数传递lambda时,同时定义了一个新类类型并由该类创建了一个对象.
-* 当使用auto定义一个用lambda初始化的变量时,定义了一个从lambda生成的类型的对象.
-* 从lambda生成的类包含的数据成员是捕获列表中的成员.当lambda对象被创建时,lambda的数据成员被初始化.
-#### 捕获列表
-* lambda捕获方式分为**值捕获**和**引用捕获**
-* lambda可以直接使用所在函数之前的变量和lambda之前的static变量.变量捕获只是指捕获lambda之前的非static变量.
 
-|捕获列表|说明|
-|-|-|
-|[]|空捕获列表.lambda不捕获变量.|
-|[names]|lambda捕获列表中的变量.名字前加&的引用捕获,否则值捕获.|
-|[&]|默认引用捕获.|
-|[=]|默认值捕获|
-|[&,identifier_list]|identifier_list中的变量必须用**值捕获**方式,其他变量**默认引用捕获**.|
-|[=,identifier_list]|identifier_list中的变量不许用**引用捕获**方式,其他变量**默认值捕获**|
-##### 值捕获
 
-* 值捕获的前提是捕获的变量**可以拷贝**.
-```'
-void func(){
-    size_t v1=42;
-    auto f=[v1] {return v1;}; //捕获v1;
-    v1=0;   //令v1为0
-    auto j=f(); //j等于42.f保存了创建它时v1的拷贝.修改v1对lambda对象f没影响.
+## 拷贝/移动
+
+| std::move()          |      |
+| -------------------- | ---- |
+| std::copy            |      |
+| std::copy_n          |      |
+| std::copy_if         |      |
+| std::transform       |      |
+| std::remove_copy     |      |
+| std::replace_copy    |      |
+| std::unique_copy     |      |
+| std::remove_copy_if  |      |
+| std::replace_copy_if |      |
+|                      |      |
+
+
+
+
+
+## 排序/排列/划分
+
+| std::sort(RandomIter beg, RandomIter end)                    |        |
+| ------------------------------------------------------------ | ------ |
+| std::sort(RandomIter beg, RandomIter end, BinaryPredicate comp) |        |
+| std::stable_sort                                             |        |
+| std::partial_sort                                            | 不稳定 |
+| std::is_sorted                                               |        |
+| std::shuffle                                                 |        |
+| next_permutation                                             |        |
+| prev_permutation                                             |        |
+| std::partition                                               |        |
+| std::stable_partition                                        |        |
+
+
+
+## 删除/替代
+
+| std::remove     | 稳定 |
+| --------------- | ---- |
+| std::remove_if  |      |
+| std::replace    |      |
+| std::replace_if |      |
+| std::unique     | 稳定 |
+|                 |      |
+
+
+
+## 查找
+
+**查找区间内的某值**
+
+| 函数原型           | 备注 |
+| ------------------ | ---- |
+| std::find          |      |
+| std::find_if       |      |
+| std::binary_search |      |
+| std::lower_bound   |      |
+| std::upper_bound   |      |
+| std::equal_range   |      |
+
+**查找子区见（区间是否包含另一个区间）**
+
+| 函数原型                                                     | 备注                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ForwardIter search_n( ForwardIter first, ForwardIter last, size_t n, const T &val) | 查找$[first, last)$中是否存在连续$n$个`val`。若存在则返回第一个序列的首备注，否则返回`last`。 |
+| ForwardIter search( ForwardIter first, ForwardIter last, ForwardIter s_first, ForwardIter s_last) | 查找$[s\_first, s\_last)$是否在$[first, last]$中。若存在则返回第一个序列的首备注，否则返回`last`。 |
+| ForwardIter search( ForwardIter first, ForwardIter last, const Searcher &searcher) | 这是 C++ 17 引入的新版本。使用`Searcher`表示匹配的范围。不提供接受判断函数的重载。如果要自定义判断函数就只能给`Searcher`提供模板参数。 |
+|                                                              |                                                              |
+
+下面的代码演示了如何在新版本中自定义判断函数。
+
+```c++
+#include <iostream>
+#include <algorithm>
+#include <ostream>
+#include <vector>
+#include <string>
+#include <functional>
+#include <iterator>
+
+
+template<typename T, typename Iter>
+void print(Iter it, size_t n)
+{
+	std::copy_n(it, n, std::ostream_iterator<T>{std::cout});
+	std::cout << std::endl;
 }
-```
-##### 引用捕获
 
-* 捕获引用、指针、迭代器时，必须保证在lambda**执行时变量存在**.
-* 当lambda返回引用时,必须保证引用的对象存在,并且**不能返回指向局部变量的引用**.
-```
-void func(){
-    size_t v1=42;
-    auto f=[&v1] {return v1;}; //捕获v1;
-    v1=0;   //令v1为0
-    auto j=f(); //j为0.f保存v1的引用.
+struct SearchTarget
+{
+	SearchTarget() = default;
+	SearchTarget(int i, int j) : _i(i), _j(j) {}
+	int get_i() const { return _i; }
+	int get_j() const { return _j; }
+	int _i;
+	int _j;
+};
+
+// 打开 std 命名空间，创建输出 SearchTarget 的函数
+namespace std
+{
+	std::ostream &
+	operator<<(std::ostream &os, const SearchTarget &rhs)
+	{
+		os << "{" << rhs.get_i() << ", " << rhs.get_j() << "}" << std::endl;
+		return os;
+	}
+
 }
-```
-##### 隐式捕获
 
-* 不仅可以显式地指定值捕获和引用捕获，也可以隐式地指定捕获类型.此时默认以隐式捕获确定的方式捕获lambda之前的所有变量.
-```
-//words是string类型.
-wc=find_if(words.begin(),words.end(),
-            [=]A(const strint &s)  //sz隐式捕获,值捕获类型.
-                { return s.size()>=sz;});
-```
+int main()
+{
+	// 自定义二元谓词(比较函数)，并使用该谓词作为 std::search 算法的比较函数。
+	struct searcher_predicate
+	{
+		bool operator()(const SearchTarget &lhs, const SearchTarget &rhs)
+		{
+			return lhs.get_i() == rhs.get_j();
+		}
+	};
 
-```
-//words是string类型;os显示捕获,引用捕获类型;c隐式捕获,值捕获类型.
-for_each(words.begin(),words.end(),
-        [=,&os] (const string &s) { os<<s<<c;});
-```
-##### 可变lambda
+	std::vector vec(10, SearchTarget(1, 1));
+	std::vector pattern(4, SearchTarget(1, 1));
+	// std::default_searcher 没有提供接受二元谓词（比较函数的版本）参数的版本，只能通过显式指定模板参数提供比较函数。
+	// std::default_searcher 第一个模板参数是迭代器类型，为此不得不使用了 decltype;第二个参数是比较函数对象，默认是 std::less<>，因为是一个类型，无法使用闭包，只能定义一个类。
+	//
+	// 使用下来，感觉如果要提供自己的比较函数，新版不如旧版好用
+	auto iter = std::search(std::begin(vec), std::end(vec),
+							std::default_searcher<decltype(std::begin(vec)),searcher_predicate>(std::begin(pattern), std::end(pattern)));
 
-* 对于值捕获的变量,lambda不能改变其值.此时可以在lambda形参列表后面加上mutable来改变值捕获变量的值.
-```
-void func(){
-    size_t v1=10;
-    auto f=[=] {return ++v1;}; //错误.lambda不改变值捕获的变量的值.
-    auto f=[=] () mutable {return ++v1;}; //正确.可变lambda.可以改变值捕获的变量的值.
+	if (iter != std::end(vec))
+	{
+		// 为了让编译器获取到类型信息，显式指定类型
+		print<SearchTarget>(iter, pattern.size());
+	}
+	else
+		std::cerr << "Not Found" << std::endl;
+
+	return 0;
 }
-```
-#### 形参列表
-* lambda形参列表和一般函数的形参列表相同,但**不允许使用默认实参**.
-#### 返回类型
-* 当lambda表达式的function_body中有**除return以外的语句**,并且**未指定return_type**时,lambda自动返回**void**.
-```
-//利用transform算法将vector<int>容器中的值转换为绝对值;
-vector<int> vec={-1,2,-3,4,-5,6,-7,8,-9};
-//正确,lambda函数体中只有return语句,编译器自动推断出返回类型为int.
-transform(vec.begin(),vec.end(),
-           [](int i) {return i<0?-i:i});
-//错误.lambda函数体中有除return之外的语句,自动推断出返回void,与实际情况不同.
-transform(vec.begin(),bec.end(),
-            [](int i) {if(i<0) return -1; else return i;})
-```
-#### 函数体
-* lambda函数体与一般函数的函数体相同.
-### 函数配适器:bind函数
 
-* lambda只适用于一两个地方使用的简单操作.当某个操作需要反复使用或者较为复杂时,使用bind函数解决.
-* bind函数和bind函数所需的cref、ref函数都定义在**functional**头文件中.
-#### 一般形式:
-
-**auto newCallable=bind(callable,args_list);**
->>注释:
->>1.newCallable是一个可调用对象.
->>2.args_lsit是一个逗号分隔的参数列表,**对应着callable的形参列表**.
->>3.args_list中可能有形如_n的占位符.这些占位符表示newCallable中相应位置的参数._1表示newCallable的第一个参数,_2表示newCallable的第二个参数,以此类推.
->>4.当调用newCallable时,newCallable调用callable,并将占位符表示的参数传递给callable.
-
-```
-//check_sz定义:
-//bool check_sz(const stirng &s,string::size_type sz){
-//    return s.size()>s=sz;
-//}
-string s="Hello";
-auto check6=bind(check_sz,_1,6); //定义newCallable,newCallable的第一个参数传递给callable;
-//相当于:
-//auto b1=check(s,6);
-bool b1=check6(s);
-```
-#### 占位符
-* 占位符_n都定义在命名空间**std::placeholders**中.使用占位符必须提供命名空间声明.
-```
-//使用_1,_2;
-using namespace std::namespaceholders::_1;
-using namespace std::namespaceholders::_2;
-//可以以直接声明命名空间std::namespaceholders;
-using namesapce std::namespacehodlers;
-```
-#### bind参数
-* bind函数配适器不仅可以避开算法对谓词参数个数的限制,还可以改变可调用对象中的参数的次序
-```
-//f(a,b,c,d,e,f)是一个有5个参数的函数;
-auto g=bind(f,a,b,_2,d,e,_1_);
-//bind调用g(X,Y)会被映射为:
-//f(a,,b,Y,d,e,X);
-```
-* 利用bind重排参数次序
-```
-//words是string类型;isShorter函数当一个参数长度小于第二个时返回真,否则返回假;
-//单词长度从小到大;
-sort(words.begin(),words.end(),isShorter);
-//单词长度从大到小;
-sort(words.begin(),words.end(),bind(isShorter,_2,_1));
-```
-* **绑定引用参数**
-
-bind那些不是占位符的参数被**拷贝**到bind返回的newCallable中,但是某些参数无法拷贝,此时使用标准库函数**ref/cref**.ref返回一个对象,包含给定的引用,此对象可以拷贝.cref返回保存const引用的对象.
-```
-//ostream &print(ostream &os,const string &s,char c){
-//    return os<<s<<c;
-//}
-for_each(words.cbegin(),words.cend(),bind(print,ref(os),_1,_2); //由于os是ostream类型对象,不可拷贝,因此使用标准库函数ref;
 ```
 
 
+
+## 范围/最值
+
+| std::min_element(ForwrodIter beg, ForwordIter end)    | 取最左边的最小值                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| std::max_element(ForwordIter beg, ForwordIter end)    | 取最右边的最值                                               |
+| std::minmax_element(ForwordIter beg, ForwordIter end) | 取最大值和最小值，返回一个`std::pair`                        |
+| std::clamp(val, min, max)                             | 将`val`截断到$[min, max]$：如果`val`在$[min,max]$中，返回`val`;若`val`大于`max`，返回`max`;若`val`小于`min`，返回`min` |
+
+
+
+
+
+# STL关联容器(待续)
+
+
+
+
+
+# 字符串和流
 
 
 
