@@ -1,0 +1,3 @@
+- [ ] x86 operend modifier
+- [ ] flag register
+- [ ] `&`
