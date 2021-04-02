@@ -25,10 +25,11 @@ C/C++ 期望自己可以在所有机器上运行，因此不能在语言层面�
 常常有人说 C/C++ 中的整数字面量类型是`int`，但这种说法是错误的。C/C++ 整形字面量究竟是什么类型取决于字面量的格式和大小。StackOverflow 上有人问[为什么在 C++ 中`(-2147483648> 0)`返回`true`](https://stackoverflow.com/questions/14695118/2147483648-0-returns-true-in-c)，代码片段如下：
 
 ```c++
-if (-2147483648 > 0)21474836482147483648
+if (-2147483648 > 0) {
     std::cout << "true";
-else
+} else {
     std::cout << "false";
+}
 ```
 
 现在让我们来探索为什么负数会大于 0。一眼看过去，`-2147483648`似乎是一个字面量（32 位有符号数的最小值），是一个合法的`int`型变量。但根据 C99 标准，字面量完全由十进制（`1234`）、八进制（`01234`）、十六进制（`0x1234`）标识符组成，因此可以认为**只有非负整数才是字面量**，负数是字面量的逆元。在上面的例子中，`2147483648`是字面量，`-2147483648`是字面量`2147483648`的逆元。
@@ -47,10 +48,8 @@ else
 
 ```c
 /* Minimum and maximum values a ‘signed int’ can hold. */
-#define INT_MAX
- 2147483647
-#define INT_MIN
- (-INT_MAX - 1)
+#define INT_MAX 2147483647
+#define INT_MIN (-INT_MAX - 1)
 ```
 
 《深入理解计算机系统》没有给出解释，很显然这是为了避免 C/C++ 推导字面量类型时将宏`INT_MIN`定义为`long long`（C99/C++11）或`unsigned long`（C89/C++98）。
@@ -63,12 +62,12 @@ else
 unsigned int a = 1;
 signed int b = -2;
 if(a + b > 0)
-  puts("-1 is larger than 0");
+    puts("-1 is larger than 0");
 // ==============================================
 unsigned short a = 1;
 signed short b = -2;
 if(a + b > 0)
-  puts("-1 is larger than 0"); // will not print
+    puts("-1 is larger than 0"); // will not print
 ```
 
 整型提升和寻常算术转换涉及到整型的秩（优先级），规则如下：
@@ -101,7 +100,7 @@ if(a + b > 0)
 
 > C11 6.3.1.1
 >
-> If an `int` can represent all values of the original type (as restricted by the width, for a bit-field), the value is converted to an `int`; otherwise, it is converted to an `unsigned int`. These are called the *integer promotions*. 
+> If an `int` can represent all values of the original type (as restricted by the width, for a bit-field), the value is converted to an `int`; otherwise, it is converted to an `unsigned int`. These are called the *integer promotions*.
 
 在算术运算中，秩小于等于`int`和`unsigned int`的整型（小整型），如`char`、`_Bool`等转换为`int`或`unsigned int`，如果`int`可以表示该类型的全部值，则转换为`unsigned int`，否则转换为`unsigned int`。由于在 x86 等平台上，int 一定可以表示这些小整型的值，因此不论是有符号还是无符号，小整型都会隐式地转换为 int，不存在例外（otherwise 所说的情况）。
 
@@ -196,8 +195,8 @@ int main()
 ```c
 // int n, m;
 if (n > 0 && m > 0 && SIZE_MAX/n >= m) {
-size_t bytes = n * m;
-… // allocate “bytes” space
+    size_t bytes = n * m;
+    // allocate “bytes” space
 }
 ```
 
@@ -222,8 +221,8 @@ char buf[1024];
 int len;
 len = 1<<30;
 // do something
-if(buf+len < buf) // check 
-  // do something
+if(buf+len < buf) // check
+    // do something
 ```
 
 如果`len`是一个负数，那么`buf + len < buf`一定为真。这个逻辑是对的，但 C 语言中数组越界是未定义行为，编译器可以忽略依赖未定义行为的代码，直接消除掉`if`语句，因此上面的检测实际上没有任何用处。因此必须在**有符号数溢出**之前进行检测。
@@ -265,7 +264,7 @@ int unsigned_int_multiply_overflow(unsigned int a, unsigned int b)
 
 int signed_int_multiply_overflow(signed int a, signed int b)
 {
-	// a 和 b 可能为负，也可能为正，需要考虑 4 种情况
+    // a 和 b 可能为负，也可能为正，需要考虑 4 种情况
     if (a > 0) {     // a is positive
         if (b > 0) { // a and b are positive
             if (a > (INT_MAX / b)) {
@@ -348,18 +347,18 @@ int IsPowerOf2(unsigned int val) {
 这里还有更好的方法，在 O(1) 时间， O(1) 空间实现功能。先将最高位的 1 以下的比特全部置为 1，然后加一（清空全部为 1 的比特，并将进位），右移一位。举例如下：
 
 ```
-01001101 --> 01111111 --> 0x01111111 + 1 --> 0x10000000 --> 0x01000000
+01001101 --> 01111111 --> 01111111 + 1 --> 10000000 --> 01000000
 ```
 代码如下：
 
 ```c
 unsigned int MinimalPowerOf2(unsigned int val) {
-    n |= n >> 1; 
-	n |= n >> 2; 
-	n |= n >> 4;
-	n |= n >> 8; 
-	n |= n >> 16;
-	return (n + 1) >> 1;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    return (n + 1) >> 1;
 }
 ```
 
@@ -394,7 +393,7 @@ unsigned int MinimalPowerOf2(unsigned int n)
 
 - 如果要利用整数溢出，必须使用无符号数
 
-  
+
 
 # 参考
 
