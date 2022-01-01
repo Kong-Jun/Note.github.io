@@ -3,6 +3,17 @@
 - [ ] ` git rebase`的机制究竟是怎样的？最终的结果与`git merge`有什么区别？为什么上游分支存在的跟变基分支相同的变化不会被应用?`rebase`为什么会发生冲突？变基后的提交对象跟原来的对象有什么区别？
 - [ ] `git log`的高级选项
 - [ ] `git merge`的多种策略
+- [ ] `git rebase --keep-base`
+- [ ] `git log --merge -p`
+- [ ] `git cherry-pick`
+- [ ] reset和revert
+- [ ] 使用`git commit --amend`将遗漏的属于前一个分支的修改添加到了当前分支，怎么办？
+
+场景：提交了A，再提交了 B，然后突然想到 A 没有提交全，忘记了在提交 A 后又提交了 B，使用`git commit --amend`错误地将修改添加到了 B 上
+
+> 类似这样的问题可以使用`git reset --soft`解决
+
+
 
 # 创建/克隆仓库
 
@@ -22,6 +33,8 @@ git merge --allow-unrelated-histories
 `git rm`
 
 `git rm --staged`和`git restore --staged`没有区别
+
+`git clean`
 
 # 撤销修改
 
@@ -316,7 +329,10 @@ git stash branch task2.2
 git commit -m "..." 
 ```
 
+  ## 合并
 
+1. 定期合并，时间太长，冲突将会很难解决
+2. 尽可能不要产生`criss cross merge`，使用 rebase 和谨慎合并也许可以解决这个问题
 
 # 参考
 

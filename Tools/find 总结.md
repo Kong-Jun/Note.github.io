@@ -62,4 +62,4 @@ SHELL> find . -exec echo {} +
 
 ## find 处理文件和目录的顺序
 
-find 递归搜索目录时先处理目录自身，再处理目录条目（目录中的文件），可以通过指定`-depth`选项来强制 find 最后处理目录自身。当`-depth`选项被指定时，`-prune`无效。`-delete`隐含了`-depth`，因此`-delete`不能和`-prune`同时使用。
+find 递归搜索目录时先处理目录自身，再处理目录条目（目录中f的文件），可以通过指定`-depth`选项来强制 find 最后处理目录自身。当`-depth`选项被指定时，`-prune`无效。`-delete`隐含了`-depth`，因此`-delete`不能和`-prune`同时使用。

@@ -1,4 +1,4 @@
-[TOC]
+如隐含规则使用的变量LDFLAGS,LDLIBS,CXXFLAGS，
 
 # 注意事项
 
@@ -47,6 +47,12 @@
 - [ ] 如何通过源码获取依赖
 
 - [ ] 如何链接系统库，即 unistd.h 等
+
+- [ ] `EXPORT_NAME`
+
+- [ ] 如何自动查找依赖
+
+[TOC]
 
 # CMake简介
 
@@ -766,7 +772,21 @@ CMake 内置了一些系统模块，比如前面用到的`CMakeParseArguments`�
 ```cmake
 cmake_minimum_required(VERSION 3.17.4)
 project(variable LANGUAGES NONE)
-list(APPEND CMAKE_MODULE_PATH "sub")		# 将子目录 sub 添加到模块搜索路径中
+list(APPENcmake_minimum_required(VERSION 2.8.12)
+
+project(googletest-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(googletest
+  GIT_REPOSITORY    https://github.com/google/googletest.git
+  GIT_TAG           master
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
+  BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)D CMAKE_MODULE_PATH "sub")		# 将子目录 sub 添加到模块搜索路径中
 message("in top-level directory")
 message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE}")
@@ -866,7 +886,7 @@ execute_process(
 - 字符串转换
 - 字符串
 
-
+使用生成表达式时按照自己需要的类型查询文档[cmake-generator-expressions](https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#logical-operators)
 
 # 使用 Modern CMake 构建项目
 
@@ -907,9 +927,7 @@ execute_process(
 
 ## 环境检测
 
-
-
-经常在检测完操作系统、编译器后设置编译选项，参考[控制编译选项、语言特性、传递宏](#控制编译选项、语言特性、传递宏)一节。
+dnf 升级除了某些包经常在检测完操作系统、编译器后设置编译选项，参考[控制编译选项、语言特性、传递宏](#控制编译选项、语言特性、传递宏)一节。
 
 ## 配置工具链
 
@@ -959,17 +977,7 @@ execute_process(
 
 
 
-## 处理依赖（待续）
-
-### `find_package()`
-
-可以通过设置变量`CMAKE_DISABLE_FIND_PACKAGE_<PackageName>`来禁止`find_package()`搜索某个包，这样可以做到在不进行大量 CMake 代码修改的情况下禁止使用某个包。这个变量必须在初次运行 CMake 时设置，在发现了某个包后再禁止搜索就没用了。
-
-### pkg-config
-
-### 直接引入依赖源代码
-
-### 使用包管理工具
+### 
 
 
 
@@ -1096,6 +1104,197 @@ add_custom_command(
 
 当目标 hello 构建完成后就会执行自定义命令，将 hello 复制到`${CMAKE_CURRENT_SOURCE_DIR}`。
 
+## 管理依赖
+
+### 使用预安装的包
+
+CMake 提供了函数`find_package()`帮助用户查找包，语法如下：
+
+```cmake
+find_package(<package> [version] [EXACT] [QUIET] [MODULE]
+             [REQUIRED] [[COMPONENTS] [components...]]
+             [OPTIONAL_COMPONENTS components...]
+             [NO_POLICY_SCOPE])
+```
+
+当调用`find_package()`时，CMake 默认会以`CONFIG`模式查找包，在 share 目录（通常是 /usr/share 或 /usr/local/share，取决于 CMake 的安装目录）下的 Modules 目录中查找并执行 Find\<package>.cmake，这个文件负责所有的工作，加入这个文件不存在，就去`CMAKE_MODULE_PATH`（默认为空）中查找同名文件。CMake 内置支持一些流行的包（如 Qt5），但 C/C++ 库数不胜数，CMake 无法内置支持所有的包，这时就需要`MODULE`模式了。在`MODULE`模式下，会在 lib 目录（/usr/lib、/usr/lib64、/usr/local/lib、/usr/local/lib64 等）下的 cmake 目录中查找 \<package>Config.cmake 或 \<lower-case-package>-config.cmake 并执行，通常使用 CMake 构建的库在安装时会将自己的 cmake 文件安装到对应目录， 以便用户使用 CMake 链接。默认情况下，CMake 先尝试`CONFIG`模式，再尝试`MODULE`模式，也可以使用参数`MODULE`直接跳过`CONFIG`模式。
+
+`find_package()`会创建多个前缀为`<package>`的变量表示查找结果，如`<package>_VERSION`、`<package>_FOUND`等，用户使用这些变量来判断包的信息：
+
+```cmake
+find_package(PkgConfig)
+if (PkgConfig_FOUND)
+    pkg_check_modules(googletest libgtest IMPORTED_TARGET)
+    pkg_check_modules(fmt libfmt IMPORTED_TARGET)
+endif()
+```
+
+以上代码片段使用`find_package()`查找包`PkgConfig`（pkg-config 程序），如果查找到使用 pkg-config 查找系统中的链接库。
+
+ 这些参数中最长使用的是`REQUIRED`，该参数标志包是必须的，为查找到直接终止 CMake 程序。
+
+可以通过设置变量`CMAKE_DISABLE_FIND_PACKAGE_<PackageName>`来禁止`find_package()`搜索某个包，这样可以做到在不进行大量 CMake 代码修改的情况下禁止使用某个包。这个变量必须在初次运行 CMake 时设置，在发现了某个包后再禁止搜索就没用了。
+
+**pkg-config**
+
+某些库没有考虑到 CMake，但提供了对 pkg-config 的支持（往往是 UNIX 上的 C 库），CMake 可以和 pkg-config 交互获取必要的信息。为了使用 pkg-config，首先需要用`find_package()`查找到它（参考上面的代码片段），之后使用函数`pkg_check_modules()`或`pkg_search_modules()`来查找库，两个函数任选一个即可，函数原型为：
+
+```cmake
+# checks for all the given modules
+pkg_check_modules(<PREFIX> [REQUIRED] [QUIET] <MODULE> [<MODULE>]*)
+# checks for given modules and uses the first working one
+pkg_search_module(<PREFIX> [REQUIRED] [QUIET] <MODULE> [<MODULE>]*)
+```
+
+这两个函数会创建一些变量，如库所在目录，编译标志等。
+
+```cmake
+<XPREFIX>_FOUND          ... set to 1 if module(s) exist
+<XPREFIX>_LIBRARIES      ... only the libraries (w/o the '-l')
+<XPREFIX>_LIBRARY_DIRS   ... the paths of the libraries (w/o the '-L')
+<XPREFIX>_LDFLAGS        ... all required linker flags
+<XPREFIX>_LDFLAGS_OTHER  ... all other linker flags
+<XPREFIX>_INCLUDE_DIRS   ... the '-I' preprocessor flags (w/o the '-I')
+<XPREFIX>_CFLAGS         ... all required cflags
+```
+
+为了使用库，通常将库声明为 imported target,如：
+
+```cmake
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(ffmpeg REQUIRED IMPORTED_TARGET libavcodec libavformat libavutil)
+target_link_libraries(${PROJECT_NAME} PRIVATE PkgConfig::ffmpeg)
+```
+
+### 直接引入依赖源代码
+
+上面介绍的两种方式直接使用系统安装号的库，避免了自己编译的过程，但存在以下问题：
+
+- 需要提前安装好依赖
+- 可能存在 ABI 不兼容和其他奇怪的环境配置问题
+
+解决以上问题的一种方法是直接将依赖的源代码下载到项目中并编译，这样不仅可以实现“一键构建”，还可以避免兼容性问题。当然，这种办法也不是完美无缺，这种办法只能在网络正常的情况下使用，依赖代码过多的话光是下载安装就是很大的麻烦。尽管这种办法存在问题，但仍是最值得我们考虑的方法之一，Google 就推荐使用这种方法，目前某些语言（Rust）默认就使用拉取源代码编译的方式构建项目。随着 CMake 成为事实上的 C++ 标准构建系统，直接引用依赖源代码构建会越来越方便。
+
+**使用 Git 克隆仓库 **
+
+Git 是目前最流行的版本控制系统，大量的开源库托管在 Github 等平台，可以使用`git submodule add <url>`将依赖库作为项目的子模块，在 configure 阶段使用`execute_process()`执行 git 命令下载依赖并构建安装。
+
+具体细节参考[Tutorial: Easy dependency management for C++ with CMake and Git](https://foonathan.net/2016/07/cmake-dependency-handling/)。我个人认为这种方式相当于手动挡，我更喜欢 CMake 提供的自动档。
+
+**使用`ExternalProject`和`FetchContent`模块**
+
+CMake 提供了 ExternalProject 模块引用外部项目（依赖）,该模块主要就是函数`ExternalProject_Add()`，在**编译时**自动下载并构建外部项目。
+
+这里以 GoogleTest 官方提供的 CMakeLists.txt 为例介绍 ExternalProject 模块。GoogleTest 创建一个模板文件 CMakeLists.txt.in，内容如下：
+
+```cmake
+##############################################
+# cmake/CMakeLists.txt.in
+##############################################
+cmake_minimum_required(VERSION 3.17)
+
+project(googletest-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(googletest
+  GIT_REPOSITORY    https://github.com/google/googletest.git
+  GIT_TAG           master
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
+  BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)
+```
+
+这个模板文件很简单，就是调用`ExternalProject_Add()`从 github 下载源代码到二进制目录中的 googletest-src，并将构建文件存放到 googletest-build 中。这两个目录不存在，调用时自动创建。
+
+项目根 CMakeLists.txt 调用`configure_file()`在 configure 阶段将模板文件拷贝到项目二进制目录中的 googletest-download（自动创建），然后直接构建 googletest。注意，`ExternalProject_Add()`在构建时下载项目，GoogleTest 的示例中在 configure 阶段下载并源代码并构建，构建完成后再接着 configure。用这个技巧，可以实现在 configure 阶段下载构建依赖。
+
+```cmake
+##################################################
+# 项目根 CMakeLists.txt
+##################################################
+# list(APPEND CMAKE_MODULE_PATH "cmake")
+
+##################################################
+# Download and unpack googletest at configure time
+##################################################
+configure_file(${CMAKE_SOURCE_DIR}/cmake/CMakeLists.txt.in googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+if(result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif()
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+# Add googletest directly to our build. This defines
+# the gtest and gtest_main targets.
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+                 EXCLUDE_FROM_ALL)
+```
+
+CMake 还提供了更方便的、基于 ExternalProject 的 FetchContent 模块，可以直接在 **configure** 阶段下载构建依赖，并且不需要用户写大量代码。FetchContent 的使用分四步：
+
+1. 调用`FetchContent_Declare()`下载依赖，参数与`ExternalProject_Add()`相似
+
+2. 调用`FetchContent_Populate()`自动创建依赖相关的变量
+
+3. 调用`FetchContent_GetProperties()`获取依赖相关的变量
+
+4. 根据变量判断是变量否已经构建依赖，如果没有则构建依赖
+
+   CMake 提供的示例如下：
+
+```cmake
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.0
+)
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+```
+
+在`FetchContent_Populate()`之前，不存在变量`googletest_POPULATED`，所以可以用`googletest_POPULATED`判断项目是否被构建，如果没被构建再尝试构建。
+
+实际上，较新的 CMake 还提供了函数`FetchContent_MakeAvailable()`自动构建未构建的依赖，因此上面的代码片段可以改为：
+
+```
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.0
+)
+FetchContent_MakeAvailable(googletest)
+```
+
+从 CMake 提供的`FetchContent_Populate()`也可以看到，直接引用源码构建的方式被许多人喜爱，以至于 CMake 连这样简单的功能都提供了专门的函数。
+
+### 使用 C++ 包管理工具
+
+这里所说的”包管理工具“不是 GNU/Linux 下的 dnf、apt、pacman 等工具，而是专门负责下载、配置、编译 C++ 库的工具，因此我把它叫做”C++ 包管理工具”。目前流行的 C++ 包管理工具有微软的 vcpkg 等，它们内置了针对特定平台的配置，自动下载源代码并编译 C++ 库，开箱即用，不需要手动配置。
+
+C++ 包管理工具一定程度上降低了 C++ 依赖管理的难度，但包管理工具自身就是一种依赖，并且只支持特定的库，可能还存在操作系统平台上的限制。
+
+
+
 ## 生成源代码
 
 ### 同一目录下生成源码
@@ -1219,7 +1418,7 @@ gmake: *** [Makefile:104：all] 错误 2
 
 实际上现在的 CMake 已经比较智能了，如果该源文件是通过`configure_file()`生成的，或者是在`add_custom_command()`中使用`OUTPUT`指定了它，CMake 可以自己发现该源文件是生成的，并自动处理它。
 
-如果 CMake 无法知道它是生成的（比如这里的情况），可以用 `set_source_file_properties(<file> PROPERTIES GENERATED 1) `显式地告诉 CMake。
+如果 CMake 无法知道它待续是生成的（比如这里的情况），可以用 `set_source_file_properties(<file> PROPERTIES GENERATED 1) `显式地告诉 CMake。
 
 在 CMakeLists.txt 添加上：`set_source_files_properties(print_info.c PROPERTIES GENERATED 1)` 即可正确构建项目。
 
@@ -1260,17 +1459,35 @@ Fortran compiler |
 
 
 
-### 不同目录下生成源码(待续)
-
 
 
 ## 构建可执行文件（待续）
 
+修改可执行文件名：设置`RUNTIME_OUTPUT_NAME`。
 
+库类似。
 
 ## 构建库（待续）
 
-四种类型
+四种类型: `STATIC`、`SHARED`、`OBJECT`、`MODULE`。
+
+`OBJECT`库实际上不是一个库，而是一堆可重定位对象文件（.o 文件）的集合，可以使用生成器表达式`$<TAEGET_OBJECT>`获取它包含的对象文件。`OBJECT`库可以被其他对象链接，直接链接到库中的对象文件。
+
+```cmake
+add_library(archive OBJECT archive.cpp zip.cpp lzma.cpp)
+add_library(archiveExtras STATIC $<TARGET_OBJECTS:archive> extras.cpp)
+add_executable(test_exe $<TARGET_OBJECTS:archive> test.cpp)
+```
+
+`OBJECT`库不可以用于`add_custom_command(TARGET)`，但库中的文件可以用于`add_custom_command(OUTPUT)`。
+
+`SHARED`库必须导出至少一个符号。`SHARED`库和`MODULE`库默认开启`POSITION_INDEPENDENT_CODE`选项。
+
+默认构建的类型由变量`BUILD_SHARED_LIBS`指定
+
+库生成的目录由`ARCHIVE_OUTPUT_DIRECTORY`、`SHARED_OUTPUT_DIRECTORY`、`SHARED_OUTPUT_DIRECTORY_Config`等指定。
+
+
 
 
 
@@ -1312,13 +1529,104 @@ Fortran compiler |
 
 
 
-# 
-
 # 文档
 
-doxygen
+```cmake
+# find browser
+find_program(
+    BROWSER
+    NAMES firefox firefox-x11 chrome chrominum
+    )
+if(BROWER_NOTFOUND)
+    message(WARNING "Brower Not Found")
+else()
+    message(STATUS "Found Browser: ${BROWSER}")
+endif()
+
+# configurate documentation system.
+# try to find Doxygen and Dot program.
+include(FindDoxygen)
+find_package(Doxygen
+    QUIET
+    COMPONENTS dot
+    )
+if(DOXYGEN_FOUND)
+    option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+    message(STATUS "Doxygen Version: ${DOXYGEN_VERSION}")
+endif()
+
+if(BUILD_DOCUMENTATION)
+    if(NOT DOXYGEN_FOUND)
+        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
+    endif()
+
+    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+
+    # open document
+    add_custom_target(open-doc
+        COMMAND ${BROWSER} ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        VERBATIM 
+        )
+    add_dependencies(open-doc doc)
+endif()
+```
+
+
 
 # 安装
+
+指定生成目录：属性`SHARED_OUTPUT_DIRECTORY`、`ARCHIVE_OUTPUT_DIRECTORY`、`RUNTIME_OUTPUT_DIRECTORY`指定目标的动态库、静态库、可执行文件等的生成位置（在二进制目录中）。这些属性均由`CMAKE_`版本的变量（`CMAKE_SHARED_OUTPUT_DIRECTORY`等）初始化。
+
+## 可执行文件
+
+
+
+## 库
+
+库名的处理：`COMPONENT`、`NAMELINK_COMPONENT`、`NAMELINK_ONLY`、`NAMELINK_SKIP`
+
+## 对不同配置使用不同安装规则
+
+`install(TARGETS)`函数允许对不同的配置使用不同的安装规则，使用`CONFIGURATIONS`选项来指定使用的安装规则。
+
+```cmake
+install(TARGETS target
+        CONFIGURATIONS Debug
+        RUNTIME DESTINATION Debug/bin)
+install(TARGETS target
+        CONFIGURATIONS Release
+        RUNTIME DESTINATION Release/bin)
+```
+
+当项目被配置为`Debug`模式时，安装时使用`Debug`模式的规则，将`target`安装在 Debug/bin;当项目被配置为`Release`模式时，`target`被安装的 Release/bin。
+
+## 安装特定模块
+
+`install(TARGETS)`可以指定安装规则相关联的模块，在安装时可以只安装特定模块。
+
+```cmake
+install(TARGETS BinTarget LibTarget
+        RUNTIME DESTINATION bin
+        COMPONENT bin
+        SHARED DESTINATION lib
+        COMPONENT lib)
+```
+
+安装时`cmake -D COMPONENT bin -P cmake_install.cmake `安装`bin`模块，`cmake_install.cmake`由 CMake 生成，通常在二进制目录中。
+
+`install(TARGETS)`中还可以通过`EXCLUDE_FROM_ALL`选项将某个模块从默认安装模块中移除。
+
+## `INTERFACE`库
 
 
 
@@ -1340,7 +1648,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 ## 输出详细的编译步骤
 
-构建时默认不会输出详细的编译、链接信息，可以在构建时制定`-- VERBOSE=1`输出详细信息。
+构建时默认不会输出详细的编译、链接信息，可以在构建时制定`-- VERBOSE=1`输出详细信息。如：
+
+```cmake
+cmake -S. -B_builds
+cmake --build _builds -- VERBOSE=1
+```
 
 如果使用 UNIX Makefile 作为原生构建系统的话，可以使用以下命令生成输出详细信息的 Makefile。
 
@@ -1348,21 +1661,17 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(CMAKE_VERBOSE_MAKEFILE ON)
 ```
 
+## `EXCLUDE_FROM_ALL`属性
 
+属性`EXCLUDE_FROM_ALL`控制对象是否被包含在生成的构建系统文件的`all`目标中。如果`EXCLUDE_FROM_ALL`被设置为` FALSE`或未定义，则该目标包含在`all`中，否则不包含在`all`中。
 
-# CMake 的缺陷
+不论`EXCLUDE_FROM_ALL`为何值，该对象都会被包含进安装列表中，如果`EXCLUDE_FROM_ALL`为`TRUE`，就必须手动构建该对象，否则安装时会出错。
 
-1. 存在某些接口上的不一致
-
-`find_package(<NAME>)`生成缓存变量`<NAME>_FOUND`，但`find_command(<NAME>)`生成`<NAME>_NOTFOUND`。
-
-2. 命令的执行存在限制
-
-`add_custom_target()`等命令中的`COMMAND`不是直接在 shell 上执行。这其实不算是缺点，但是我需要直接在 shell 上执行命令，最终通过执行 shell 脚本完成
+除了 Ninja Multi-Config 生成器支持随配置变化的` EXCLUDE_FROM_ALL`属性，其他生成器必须保证所有配置选项都有相同的`EXCLUDE_FROM_ALL`属性。
 
 
 
-# 术语
+# 附录
 
 ## imported target
 
@@ -1377,8 +1686,6 @@ option(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 # 参考
-
-
 
 [CMake 菜谱(陈晓伟译)](https://www.bookstack.cn/read/CMake-Cookbook/README.md):一本通过例子讲解 CMake 的好书。
 

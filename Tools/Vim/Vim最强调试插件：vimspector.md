@@ -248,7 +248,7 @@ vimspector 介绍的的用户输入都字符串，有时会出现类型和用户
 
 ## 断点
 
-可以在配置中提前打好断点，比如在程序入口点暂停（通常是`main()`），在抛出异常时暂停，在某函数暂停等等。
+可以在配置中提前打好断点，比如在程序入口点暂停（通常是`main()`），在抛出异常时暂停等，暂时不支持在配置中，打函数、代码行断点
 
 `stopAtEntry`: 布尔类型。是否在程序入口点暂停。
 
@@ -271,7 +271,7 @@ vimspector 介绍的的用户输入都字符串，有时会出现类型和用户
 }
 ```
 
-Vimspector 暂时不支持在配置中在函数、代码行上打断点，但是可以通过底层的调试适配器，直接在调试器中执行命令，绕开这个限制。
+目前 Vimspector 对断点的支持还比较有限，仅支持打断点，不能够方便的编辑、禁用、使能断点，将来这些功能会实现在断点窗口中，参考[[Feature Request]: Breakpoints window #10](https://github.com/puremourning/vimspector/issues/10)。
 
 ## 示例
 
@@ -439,7 +439,8 @@ vimspector 文档中给出的调试vim的配置：
                     "exception": {
                         "cpp_throw": "Y",
                         "cpp_catch": "N"
-                    }
+                    }但是对C/C++、Python 等流行的语言已经进行了充分的测试。
+
                 }
             }
         },
@@ -471,19 +472,17 @@ vimspector 文档中给出的调试vim的配置：
 
 ![vimspector-screenshot](images/vimspector-screenshot.gif)
 
-## 快捷键
+## 使用技巧
+
+### 快捷键
 
 Vimspector 预设了vscode mode 和 human mode 两套键盘映射（快捷键）。
 
-开启vscode mode：
+但是对C/C++、Python 等流行的语言已经进行了充分的测试。开启vscode mode：
 
 ```
 let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
 ```
-
-![](images/1954702-20200505175802855-63918029.png)
-
-
 
 开启 human mode：
 
@@ -493,4 +492,73 @@ let g:vimspector_enable_mappings = 'HUMAN'
 
 ![](images/1954702-20200505175855111-809170906.png)
 
-这两个套快捷键都要用到 F11 和 F12，这两个按键往往会和终端快捷键冲突，如 F11 是最大化终端，F12 是弹出 guake 之类的下拉框终端，建议终端用户重新定义快捷键。
+这两个套快捷键都要用到 F11 和 F12，往往会和终端快捷键冲突，比如 F11 是最大化终端，F12 是弹出 guake 之类的下拉框终端，建议终端用户重新定义快捷键。参考快捷键：
+
+```vim
+nnoremap <silent> <F1> :call vimspector#Stop()<CR>
+nnoremap <silent> <F2> :call vimspector#Restart()<CR>
+nnoremap <silent> <F3> :call vimspector#Continue()<CR>
+nnoremap <silent> <F4> :call vimspector#Pause()<CR>
+nnoremap <silent> <F5> :call vimspector#RunToCursor()<CR>
+nnoremap <silent> <F6> :call vimspector#ToggleBreakpoint()<CR>
+nnoremap <silent> <Leader><F6> :call vimspector#ListBreakpoints()<CR>
+nnoremap <silent> <F7> :call <SID>toogle_conditional_breakpoint()<CR>
+nnoremap <silent> <F8> :call vimspector#StepOver()<CR>
+nnoremap <silent> <F9> :call vimspector#StepInto()<CR>
+nnoremap <silent> <F10> :call vimspector#StepOut()<CR>
+
+function! s:toogle_conditional_breakpoint()
+    let l:condition = trim(input("Condition: "))
+    if empty(l:condition)
+        return
+    endif
+    let l:count = trim(input("Count: "))
+    if empty(l:count)
+        let l:count = 1
+    else
+        let l:count = str2nr(l:count)
+    endif
+    call vimspector#ToggleBreakpoint({'condition': l:condition, 'hitCondition': l:count})
+endfunction
+
+```
+
+### 修改 UI
+
+Vimspector 的 UI 是针对宽屏设计的，对于笔记本屏幕可能不太友好，最主要的问题是 console 窗口挤占了源代码窗口的空间，可以在启动时关闭 console 窗口，需要时再使用`:VimspectorShowOutput Console`显示。
+
+```vim
+augroup MyVimspectorUICustomistaion
+  autocmd User VimspectorUICreated call <SID>vimspector_custom_ui()
+augroup END
+
+" Custom Vimspector UI
+" close console window to maximise source code window
+function s:vimspector_custom_ui()
+    if !getwinvar(g:vimspector_session_windows.output, '&hidden')
+        let l:winid = win_getid()
+        let l:cursor = getcurpos()
+        call win_gotoid(g:vimspector_session_windows.output)
+        :quit
+        call win_gotoid(l:winid)
+        call setpos('.', l:cursor)
+    endif
+endfunction
+
+```
+
+调整 UI 的具体细节可以参考文档。
+
+### Ballon-Eval
+
+当鼠标悬浮在变量上时，Vimspector 会自动打印变量的类型与值，这个功能 依赖于 ballon-eval（help），仅支持 GVim，但 Vim 最好也开启 ballon-eval 支持。如果不使用 GVim，可以使用以下映射手动查看变量的值。
+
+```vim
+nmap <Leader>di <Plug>VimspectorBalloonEval
+xmap <Leader>di <Plug>VimspectorBalloonEval
+```
+
+### 修改变量打印的格式
+
+在 watch 窗口中输入变量名时在后面加上`,format`可以修改打印格式，目前使用 vscode-cpptools 似乎只能使用`,x`（十六进制）和`,o`（八进制）。
+

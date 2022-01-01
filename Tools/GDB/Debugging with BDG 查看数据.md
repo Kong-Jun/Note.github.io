@@ -1,4 +1,4 @@
-# Debugging with BDG: 查看数据
+# Debugging with GDB: 查看数据
 
 [TOC]
 
@@ -210,7 +210,7 @@ $2 = (void *) 0x8049560
 
 也可以使用`$`、`$$`、`$N`或`$N`来打印变量历史中的值。`$`表示最近一次`print`，`$$`表示上上次`print`，`$N`表示编号为`N`的变量历史，`$$N`表示从上次`print`开始的变量历史号。如`$$0`等同于`$`（上次`print`），`$$2`前 3 次`print`。
 
-# convenience variable
+## convenience variable
 
 convenience variable 主要有两个用途：
 
@@ -237,13 +237,13 @@ p *array[$i++]
 
 然后按不断按回车即可遍历数组并查看指针指向的对象。
 
-# 寄存器
+## 寄存器
 
 `info registers`查看通用寄存器，`info all-registers`查看包括浮点数寄存器在内的寄存器。
 
 `print $<register>`可以查看寄存器`register`的值，如访问 RISCV 寄存器 a0：`print $a0`。
 
-# 将内存/变量拷贝到文件中
+## 将内存/变量拷贝到文件中
 
 有时可能想要比较多次运行过程中某变量或某块内存的值，GDB 没有直接提供这种功能，这时可以将内存/变量拷贝到文件中再比较。
 
@@ -281,11 +281,11 @@ restore filename [binary] bias start end
 
 如果不指定格式，`dump`和`append`默认写入 binary 数据，实际上`append`暂时只支持 binary。`restore`可以自动判断格式，但由于 binary 无格式，必须手动指定。其他几种格式文件中以及记录了固定的地址，`restore`时不需要指定`bias`，binary 文件地址总是从 0 开始，因此`restore filename binary bias start end`实际上会将文件中的内容写入进程地址`bias`。
 
-# 生成 core file
+## 生成 core file
 
 `generate-core-file [file]`或`gcore [file]`生成 core dump，如果不指定文件名，生成的文件名为`core.pid`。
 
-# 改善 GDB 的输出
+## 改善 GDB 的输出
 
 GDB 默认`print`输出是最简的，部分内容不会被打印，并且没有格式化。可以通过设置一定的选项，改善输出，这里列出几个我个人觉得比较有用的选项：
 

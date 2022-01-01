@@ -6,7 +6,7 @@ Ibex 是一个产品级的 32 位开源 RISC-V 处理器，使用 SystemVerilog 
 
 总体架构如下：
 
-![blockdiagram](images/blockdiagram.svg)
+![blockdiagram](https://gitee.com/kongjun18/image/raw/master/blockdiagram.svg)
 
 # 流水线
 
@@ -31,7 +31,7 @@ Ibex 支持多周期指令，每条指令都至少需要两个周期才能通过
 
 # 取指（IF）
 
-<img src="images/if_stage.svg" alt="if_stage"  />
+<img src="https://gitee.com/kongjun18/image/raw/master/if_stage.svg" alt="if_stage"  />
 
 Ibex 通过预取缓冲区（prefetch buffer）从内存中取值，对指令高速缓存处于草案阶段，需要专门配置。Ibex 的预取缓冲区线性地取指令知道缓冲区满，指令连同对应的 PC 一起存储到取指队列中。当执行跳转指令时，IF 阶段的控制区刷新预取缓冲区。
 
@@ -43,7 +43,7 @@ Ibex 支持 RV32C（压缩指令拓展），在 IF 阶段解压压缩指令，�
 
 ## 译码/执行（ID/EX）
 
-<img src="images/de_ex_stage.svg" alt="de_ex_stage"  />
+<img src="https://gitee.com/kongjun18/image/raw/master/de_ex_stage.svg" alt="de_ex_stage"  />
 
 ID/EX 阶段由多个块组成：
 

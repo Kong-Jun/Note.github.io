@@ -1,0 +1,36 @@
+1. 列表解包
+2. 列表切片
+3. 字符串和数字比较时，字符串转换为数字，若字符串无法转换为数字则为 0
+4. closure: {args... -> expr...} 和 closure 函数
+5. b:changedtick 用来记录缓冲区修改次数，每次修改递增，可以通过这个变量判断缓冲区是否被修改
+6. 函数有默认参数，如果某个中间的参数使用默认值可以使用 v:none，如：
+function Something(a = 10, b = 20, c = 30)
+endfunction
+call Something(1, v:none, 3)      " b = 20
+7. 花括号变量名
+echo my_{&background}_message，花括号内将替换为 &background 的值。
+8. const 和 lockvar 定义只读变量
+9. deepcopy() 和 copy()
+copy() 对于引用类型，仅仅是创建一个新的引用
+let a = [1, 2, 3]
+let b = copy(a) " a, b 指向同一个 list
+" ------------------------------------
+let a = [1, 2, 3]
+let b = deepcopy(a) " a, b 指向不同的 list, b 指向的 list 是 a 的副本
+
+
+
+- 使用 fnamemodify() 处理文件路径
+- 使用 bufadd() bufload() 加载 buffer
+- 创建 scratch-buffer
+*nvim*:
+    let bid = nvim_create_buf(v:false, v:true)
+*vim*:
+    let bid = bufadd('')
+    call bufload(bid)
+    call setbufvar(bid, '&buflisted', 0)
+    call setbufvar(bid, '&bufhidden', 'hide')
+- neovim UI 的坐标系统
+- 总是使用`normal!`而不是用`normal`
+- 当做了修改（不管修改是否导致差异，如将 a 改为 a），`modified`选项将置位，undo 到最初状态后`modified`恢复。修改`fileformat`和`fileencoding`也将置位`modified`。某些自动命令导致的修改不影响`modified`。
+- `nvim_buf_set_lines()`索引从 0 开始，左闭右开。
